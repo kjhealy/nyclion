@@ -1,0 +1,41 @@
+authors:
+  Kieran Healy:
+    href: http://kieranhealy.org
+
+url: https://kjhealy.github.io/nyclion/
+template:
+  bootstrap: 5
+  bslib:
+    base_font: {google: "IBM Plex Sans"}
+    heading_font: {google: "IBM Plex Sans"}
+    code_font: {google: "IBM Plex Mono"}
+
+reference:
+  - title: "Street segments"
+    desc: LION single-line street and feature network.
+    contents:
+      - nyc_lion_sf
+  - title: "Nodes and street names"
+    desc: Node points and the node-to-street-name lookup.
+    contents:
+      - nyc_lion_nodes_sf
+      - nyc_lion_node_streets_df
+  - title: "Alternate names"
+    desc: Alternate street names for geocoding.
+    contents:
+      - nyc_lion_altnames_df
+
+navbar:
+  right:
+   - icon: fa-github
+     href: https://github.com/kjhealy/nyclion
+
+figures:
+  dev: grDevices::png
+  dpi: 300
+  dev.args: []
+  fig.ext: png
+  fig.width: 7.2916667
+  fig.height: ~
+  fig.retina: 2
+  fig.asp: 1.618

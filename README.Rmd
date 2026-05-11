@@ -1,0 +1,105 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# nyclion <img src="man/figures/nyclion.png" align="right" width="360" alt="nyclion package hex logo">
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The nyclion package bundles the New York City Department of City
+Planning's [LION File
+Geodatabase](https://www.nyc.gov/site/planning/data-maps/open-data.page),
+a single-line representation of every NYC street segment plus a rich
+set of administrative, traffic, and geocoding attributes. It also
+includes the node points, the node-to-street-name lookup, and the
+alternate-names table used by NYC's Geosupport System for geocoding.
+
+LION is more comprehensive than the simpler NYC Open Data street
+centerline shipped by the `nycstreets` package: it covers non-street
+linear features (shoreline, railroads, district boundaries, paper
+streets, alleys, ferry routes), carries side-specific census /
+borough / community-district / electoral fields, and exposes the
+LGC / `join_id` keys that DCP's geocoder depends on.
+
+## Installation
+
+```r
+# install.packages("pak")
+pak::pak("kjhealy/nyclion")
+```
+
+## Datasets
+
+```{r load, message = FALSE}
+library(nyclion)
+library(dplyr)
+library(sf)
+```
+
+The package includes four datasets:
+
+```{r overview}
+nyc_lion_sf
+nyc_lion_nodes_sf
+nyc_lion_node_streets_df
+nyc_lion_altnames_df
+```
+
+## Counts by feature type
+
+`feature_typ` separates streets (`"0"`) from non-street linear features
+(shoreline, railroads, district boundaries, etc.):
+
+```{r feature-typ}
+nyc_lion_sf |>
+  st_drop_geometry() |>
+  count(feature_typ) |>
+  arrange(desc(n))
+```
+
+## Bike-route classification
+
+LION carries posted bike-route attributes alongside the street network.
+The `bike_lane` codes distinguish among class I/II/III configurations;
+non-bike segments are blank.
+
+```{r bike}
+nyc_lion_sf |>
+  st_drop_geometry() |>
+  filter(bike_lane != "  ") |>
+  count(bike_lane) |>
+  arrange(desc(n))
+```
+
+## A small map
+
+Manhattan-only street network, drawn in LION's native EPSG:2263
+projection.
+
+```{r manhattan-map, message = FALSE, warning = FALSE}
+library(ggplot2)
+
+manhattan <- nyc_lion_sf |>
+  filter(l_boro == "1", feature_typ == "0", rb_layer %in% c("G", "B"))
+
+ggplot(manhattan) +
+  geom_sf(linewidth = 0.1, colour = "grey25") +
+  theme_void()
+```
+
+## Data Source
+
+NYC Department of City Planning, LION File Geodatabase, edition 25C,
+"BYTES of the BIG APPLE", published 2025-08-18 (quarterly updates).

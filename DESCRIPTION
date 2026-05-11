@@ -1,0 +1,25 @@
+Package: nyclion
+Title: NYC LION Single Line Street Network
+Version: 0.0.1.9000
+Authors@R:
+    person("Kieran", "Healy", , "kjhealy@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-9114-981X"))
+Description: New York City Department of City Planning LION File
+    Geodatabase, a single-line representation of NYC streets with address
+    ranges and a rich set of administrative, traffic, and geocoding
+    attributes. Includes the street segments (multilinestring), node
+    points, the node-to-street lookup, and the alternate names table that
+    supports geocoding.
+License: MIT + file LICENSE
+URL: https://kjhealy.github.io/nyclion/, https://github.com/kjhealy/nyclion
+BugReports: https://github.com/kjhealy/nyclion/issues
+Depends:
+    R (>= 3.5)
+Encoding: UTF-8
+LazyData: true
+LazyDataCompression: xz
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Suggests:
+    sf (>= 1.0.0),
+    tibble (>= 3.0.0)
