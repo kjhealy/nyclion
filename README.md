@@ -5,6 +5,7 @@
 
 <!-- badges: start -->
 
+[![R-CMD-check](https://github.com/kjhealy/nyclion/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/kjhealy/nyclion/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The nyclion package bundles the New York City Department of City
