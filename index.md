@@ -1,0 +1,336 @@
+# nyclion ![nyclion package hex logo](reference/figures/nyclion.png)
+
+The nyclion package bundles the New York City Department of City
+Planning’s [LION File
+Geodatabase](https://www.nyc.gov/site/planning/data-maps/open-data.page),
+a single-line representation of every NYC street segment plus a rich set
+of administrative, traffic, and geocoding attributes. It also includes
+the node points, the node-to-street-name lookup, and the alternate-names
+table used by NYC’s Geosupport System for geocoding.
+
+LION is more comprehensive than the simpler NYC Open Data street
+centerline shipped by the `nycstreets` package: it covers non-street
+linear features (shoreline, railroads, district boundaries, paper
+streets, alleys, ferry routes), carries side-specific census / borough /
+community-district / electoral fields, and exposes the LGC / `join_id`
+keys that DCP’s geocoder depends on.
+
+## Installation
+
+``` r
+
+# install.packages("pak")
+pak::pak("kjhealy/nyclion")
+```
+
+## Datasets
+
+``` r
+
+library(nyclion)
+library(dplyr)
+library(sf)
+```
+
+The package includes four datasets:
+
+``` r
+
+nyc_lion_sf
+#> Simple feature collection with 242121 features and 92 fields
+#> Geometry type: MULTILINESTRING
+#> Dimension:     XY
+#> Bounding box:  xmin: 912287.1 ymin: 113279.3 xmax: 1067383 ymax: 273617.8
+#> Projected CRS: NAD83 / New York Long Island (ftUS)
+#> First 10 features:
+#>               street                  saf_street_name feature_typ segment_typ
+#> 1    EAST 168 STREET                                            0           U
+#> 2    WEST 192 STREET                                            0           U
+#> 3       UNION AVENUE                                            0           U
+#> 4       UNION AVENUE BEHAGEN PLAYGROUND COMFORT STA             0           U
+#> 5       UNION AVENUE BEHAGEN PLAYGROUND FIELD NORTH             0           U
+#> 6       UNION AVENUE BEHAGEN PLAYGROUND FIELD SOUTH             0           U
+#> 7   DELAFIELD AVENUE                                            6           U
+#> 8    WEST 252 STREET                                            0           U
+#> 9  CLAREMONT PARKWAY                                            0           U
+#> 10    TOPPING AVENUE                                            0           U
+#>    inc_ex_flag rb_layer non_ped traf_dir traf_src spec_addr face_code seq_num
+#> 1                     B                T      DOT                2510   03070
+#> 2                     B                A      DOT                7984   00040
+#> 3                     B                W      DOT                7280   00130
+#> 4                     B                W      DOT         X      7280   00130
+#> 5                     B                W      DOT         X      7280   00130
+#> 6                     B                W      DOT         X      7280   00130
+#> 7                     B                T      DOT                1876   01020
+#> 8                     B                T      DCP                8144   03010
+#> 9                     B                T      DOT                1476   00020
+#> 10                    B                W      DOT                7180   00060
+#>    street_code saf_street_code lgc1 lgc2 lgc3 lgc4 lgc5 lgc6 lgc7 lgc8 lgc9
+#> 1       226700                   01                                        
+#> 2       274810                   01                                        
+#> 3       270420                   01                                        
+#> 4       270420          212795   01                                        
+#> 5       270420          212795   01                                        
+#> 6       270420          212795   01                                        
+#> 7       224120                   01                                        
+#> 8       275175                   01   02                                   
+#> 9       219720                   01                                        
+#> 10      269220                   01                                        
+#>    boe_lgc segment_id seg_count loc_status l_zip r_zip l_boro r_boro l_cd r_cd
+#> 1        1    0078126         1          X 10456 10456      2      2  203  203
+#> 2        1    0079796         1            10468 10468      2      2  207  207
+#> 3        1    0077356         4          X 10459 10459      2      2  203  203
+#> 4        1    0077356         4          X 10459 10459      2      2  203  203
+#> 5        1    0077356         4          X 10459 10459      2      2  203  203
+#> 6        1    0077356         4          X 10459 10459      2      2  203  203
+#> 7        1    0073490         1            10471 10471      2      2  208  208
+#> 8        1    0174633         1            10471 10471      2      2  208  208
+#> 9        1    0078173         1          X 10457 10457      2      2  203  203
+#> 10       1    0078219         1            10457 10457      2      2  205  205
+#>    latomicpolygon ratomicpolygon lct2020 lct2020suf rct2020 rct2020suf lcb2020
+#> 1             402            101     149                185         02    3001
+#> 2             302            104     265                265               2000
+#> 3             402            401     135                131               2000
+#> 4             402            401     135                131               2000
+#> 5             402            401     135                131               2000
+#> 6             402            401     135                131               2000
+#> 7             119            123     335                335               1010
+#> 8             208            141     335                335               1004
+#> 9             401            303     167                169               2000
+#> 10            102            101     229         01     229         01    4000
+#>    lcb2020suf rcb2020 rcb2020suf l_assm_dist l_elect_dist r_assm_dist
+#> 1                1000                     79          034          79
+#> 2                1004                     78          035          78
+#> 3                2003                     79          038          79
+#> 4                2003                     79          038          79
+#> 5                2003                     79          038          79
+#> 6                2003                     79          038          79
+#> 7                1013                     81          025          81
+#> 8                1003                     81          025          81
+#> 9                1002                     79          012          79
+#> 10               2000                     86          040          86
+#>    r_elect_dist split_elect l_schl_dist r_schl_dist split_schl l_sub_sect
+#> 1           034                      09          09       <NA>         1B
+#> 2           037                      10          10       <NA>         1A
+#> 3           032                      12          12       <NA>         1A
+#> 4           032                      12          12       <NA>         1A
+#> 5           032                      12          12       <NA>         1A
+#> 6           032                      12          12       <NA>         1A
+#> 7           025                      10          10       <NA>         3D
+#> 8           025                      10          10       <NA>         3D
+#> 9           009                      09          09       <NA>         1B
+#> 10          040                      09          09       <NA>         3B
+#>    r_sub_sect san_dist_ind map_from map_to boro_bndry mh_ri_flag curve_flag
+#> 1          1B                   3D     3D                                  
+#> 2          1A                   3C     3C                                  
+#> 3          1A                   6C     6C                                  
+#> 4          1A                   6C     6C                                  
+#> 5          1A                   6C     6C                                  
+#> 6          1A                   6C     6C                                  
+#> 7          3D                   1C     1C                                  
+#> 8          3D                   1C     1C                                  
+#> 9          1B                   3D     3D                                  
+#> 10         3B                   3D     3D                                  
+#>    radius node_id_from node_id_to node_level_f node_level_t con_parity twisted
+#> 1       0      0047740    9045677            M            M                   
+#> 2       0      0048679    0048678            M            M                   
+#> 3       0      0047288    0047822            M            M                   
+#> 4       0      0047288    0047822            M            M                   
+#> 5       0      0047288    0047822            M            M                   
+#> 6       0      0047288    0047822            M            M                   
+#> 7       0      0045034    0045038            M            M                   
+#> 8       0      0084655    0045050            M            M                   
+#> 9       0      0047763    0047765            M            M                   
+#> 10      0      0047788    0047803            M            M                   
+#>    rw_type physical_id generic_id  nypdid  fdnyid l_block_face_id
+#> 1        1       35231      30694                      1422600653
+#> 2        1       35248      30711                      1522607129
+#> 3        1       35252      30715                      1422603726
+#> 4        1       35252      30715                      1422603726
+#> 5        1       35252      30715                      1422603726
+#> 6        1       35252      30715                      1422603726
+#> 7        1       35275      30738                      1522605283
+#> 8        3       35279     180901                      1522607884
+#> 9        1       35287      30749                      1522605506
+#> 10       1       35297      30759                      1522604515
+#>    r_block_face_id legacy_id status street_width_min street_width_max bike_lane
+#> 1       1422602017   0078126      2               34               34          
+#> 2       1522607721   0079796      2               30               30          
+#> 3       1422604132   0077356      2               34               34          
+#> 4       1422604132   0077356      2               34               34          
+#> 5       1422604132   0077356      2               34               34          
+#> 6       1422604132   0077356      2               34               34          
+#> 7       1522610703   0073490      2               30               30          
+#> 8       1522603142   0174633      2               30               30          
+#> 9       1522609726   0078173      2               70               70          
+#> 10      1522611029   0078219      2               28               30          
+#>    bike_trafdir posted_speed snow_priority number_travel_lanes
+#> 1                         25             S                   2
+#> 2                         25             S                   1
+#> 3                         25             S                   1
+#> 4                         25             S                   1
+#> 5                         25             S                   1
+#> 6                         25             S                   1
+#> 7                                        V                   2
+#> 8                         25             H                   2
+#> 9                         25             C                   4
+#> 10                        25             S                   1
+#>    number_park_lanes number_total_lanes from_left to_left from_right to_right
+#> 1                  2                  4       599     699        596      716
+#> 2                  2                  3        58      98         63       99
+#> 3                  2                  3      1017    1079       1016     1084
+#> 4                  2                  3         0       0          0        0
+#> 5                  2                  3         0       0          0        0
+#> 6                  2                  3         0       0          0        0
+#> 7                  2                  4      4601    4645       4600     4664
+#> 8                                     2         0       0          0        0
+#> 9                  2                  6       401     417        400      416
+#> 10                 2                  3      1801    1849       1800     1838
+#>            join_id l_pd_service_area r_pd_service_area truck_route_type
+#> 1    2251001000000                                                     
+#> 2    2798401000000                                                     
+#> 3    2728001000000                                                     
+#> 4  21279502000000X                                                     
+#> 5  21279503000000X                                                     
+#> 6  21279504000000X                                                     
+#> 7    2187601000000                                                     
+#> 8    2814401020000                                                     
+#> 9    2147601000000                                                     
+#> 10   2718001000000                                                     
+#>                             SHAPE
+#> 1  MULTILINESTRING ((1010964 2...
+#> 2  MULTILINESTRING ((1011577 2...
+#> 3  MULTILINESTRING ((1011601 2...
+#> 4  MULTILINESTRING ((1011601 2...
+#> 5  MULTILINESTRING ((1011601 2...
+#> 6  MULTILINESTRING ((1011601 2...
+#> 7  MULTILINESTRING ((1009974 2...
+#> 8  MULTILINESTRING ((1009942 2...
+#> 9  MULTILINESTRING ((1010430 2...
+#> 10 MULTILINESTRING ((1010371 2...
+nyc_lion_nodes_sf
+#> Simple feature collection with 139421 features and 2 fields
+#> Geometry type: POINT
+#> Dimension:     XY
+#> Bounding box:  xmin: 912287.1 ymin: 113940.6 xmax: 1067383 ymax: 273617.8
+#> Projected CRS: NAD83 / New York Long Island (ftUS)
+#> First 10 features:
+#>    nodeid v_intersect                     Shape
+#> 1       1             POINT (912935.7 119003.6)
+#> 2       2             POINT (913801.1 116956.8)
+#> 3       3             POINT (912287.1 120468.6)
+#> 4       4             POINT (912292.1 122532.3)
+#> 5       5             POINT (912366.5 124500.2)
+#> 6       6             POINT (912459.3 124774.3)
+#> 7       7             POINT (912512.1 124384.8)
+#> 8       8             POINT (913546.4 122322.3)
+#> 9       9               POINT (913580.9 122397)
+#> 10     10             POINT (913671.2 122413.7)
+nyc_lion_node_streets_df
+#> # A tibble: 245,070 × 2
+#>    node_id street_name        
+#>      <int> <chr>              
+#>  1       1 " NY-NJ BOUNDARY"  
+#>  2       1 " 2010 CB BOUNDARY"
+#>  3       2 " NY-NJ BOUNDARY"  
+#>  4       3 " NY-NJ BOUNDARY"  
+#>  5       4 " NY-NJ BOUNDARY"  
+#>  6       4 " 2010 CB BOUNDARY"
+#>  7       5 " NY-NJ BOUNDARY"  
+#>  8       6 " NY-NJ BOUNDARY"  
+#>  9       7 " NY-NJ BOUNDARY"  
+#> 10       7 " 2000 CB BOUNDARY"
+#> # ℹ 245,060 more rows
+nyc_lion_altnames_df
+#> # A tibble: 126,954 × 7
+#>    p_dir p_type s_name                        s_type s_dir street        join_id
+#>    <chr> <chr>  <chr>                         <chr>  <chr> <chr>         <chr>  
+#>  1 E     <NA>   168                           ST     <NA>  EAST 168 STR… "22510…
+#>  2 W     <NA>   192                           ST     <NA>  WEST 192 STR… "27984…
+#>  3 <NA>  <NA>   UNION                         AVE    <NA>  UNION AVENUE  "27280…
+#>  4 <NA>  <NA>   UNION                         AVE    <NA>  UNION AVENUE  "21279…
+#>  5 <NA>  <NA>   UNION                         AVE    <NA>  UNION AVENUE  "21279…
+#>  6 <NA>  <NA>   UNION                         AVE    <NA>  UNION AVENUE  "21279…
+#>  7 <NA>  <NA>   DELAFIELD                     AVE    <NA>  DELAFIELD AV… "21876…
+#>  8 W     <NA>   252                           ST     <NA>  WEST 252 STR… "28144…
+#>  9 <NA>  <NA>   252 ST BRDGE OV H HUDSON PKWY <NA>   <NA>  252 ST BRDGE… "28144…
+#> 10 <NA>  <NA>   CLAREMONT                     PKWY   <NA>  CLAREMONT PA… "21476…
+#> # ℹ 126,944 more rows
+```
+
+## Counts by feature type
+
+`feature_typ` separates streets (`"0"`) from non-street linear features
+(shoreline, railroads, district boundaries, etc.):
+
+``` r
+
+nyc_lion_sf |>
+  st_drop_geometry() |>
+  count(feature_typ) |>
+  arrange(desc(n))
+#>    feature_typ      n
+#> 1            0 189029
+#> 2            3  12978
+#> 3            6   9543
+#> 4            2   9298
+#> 5            1   8704
+#> 6            A   4021
+#> 7            7   3235
+#> 8            8   1668
+#> 9            9   1209
+#> 10           W   1121
+#> 11           F    967
+#> 12           5    289
+#> 13           C     59
+```
+
+## Bike-route classification
+
+LION carries posted bike-route attributes alongside the street network.
+The `bike_lane` codes distinguish among class I/II/III configurations;
+non-bike segments are blank.
+
+``` r
+
+nyc_lion_sf |>
+  st_drop_geometry() |>
+  filter(bike_lane != "  ") |>
+  count(bike_lane) |>
+  arrange(desc(n))
+#>    bike_lane     n
+#> 1          2 11787
+#> 2          1  8581
+#> 3          3  5891
+#> 4          4   443
+#> 5          6   238
+#> 6         11   123
+#> 7          9    51
+#> 8          8    40
+#> 9         10    29
+#> 10         5    22
+```
+
+## A small map
+
+Manhattan-only street network, drawn in LION’s native EPSG:2263
+projection.
+
+``` r
+
+library(ggplot2)
+
+manhattan <- nyc_lion_sf |>
+  filter(l_boro == "1", feature_typ == "0", rb_layer %in% c("G", "B"))
+
+ggplot(manhattan) +
+  geom_sf(linewidth = 0.1, colour = "grey25") +
+  theme_void()
+```
+
+![](reference/figures/README-manhattan-map-1.png)
+
+## Data Source
+
+NYC Department of City Planning, LION File Geodatabase, edition 25C,
+“BYTES of the BIG APPLE”, published 2025-08-18 (quarterly updates).
